@@ -22,8 +22,11 @@ import java.util.logging.LogRecord;
 public class BingoMulti extends AppCompatActivity {
 
     TextView matrix[][] = new TextView[5][5];
+    TextView state;
+
     private final int maxRange = 51; //0~50
     int[][] nMatrix = new int[5][5];
+    String recvMessage;
 
     private ArrayAdapter<String> mListAdapter; //logListView에 사용
 
@@ -35,6 +38,8 @@ public class BingoMulti extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bingo_matrix);
+
+        state = (TextView)findViewById(R.id.state);
 
         //TextView 배열로 빙고판 구성
         int getID;
@@ -63,7 +68,7 @@ public class BingoMulti extends AppCompatActivity {
         logListView.setAdapter(mListAdapter);
 
 
-        recieveData();
+        receiveData();
 
     }
 
@@ -109,10 +114,10 @@ public class BingoMulti extends AppCompatActivity {
                             playerClickNumber = nMatrix[i][j];
                             nMatrix[i][j] = -1;
                             matrix[i][j].setText("X");
+                            sendMessage(Integer.toString(playerClickNumber));
                         }
                         //todo 숫자 눌렀을때 턴 넘기기
                         //todo 턴 넘기고 클릭 막기
-
                     }
                 });
             }
@@ -121,7 +126,7 @@ public class BingoMulti extends AppCompatActivity {
 
 
     //수신쓰레드 생성//
-    private void recieveData(){
+    private void receiveData(){
         int readBufferPosition = 0;
         byte[] readBuffer = new byte[1024];
 
@@ -137,6 +142,7 @@ public class BingoMulti extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
+                    //데이터 수신//
                     try {
                         if (byteAvailable > 0) {
                             byte[] packetByte = new byte[byteAvailable];
@@ -148,8 +154,9 @@ public class BingoMulti extends AppCompatActivity {
                                 if (b == '\n') {
                                     byte[] encodeByte = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodeByte, 0, encodeByte.length);
-                                    String recvMessage = new String(encodeByte, "UTF-8");
-
+                                    recvMessage = new String(encodeByte, "UTF-8");
+                                    mListAdapter.insert("상대편이 "+recvMessage+"를 선택했습니다.",0);
+                                    opponentClickNumber = Integer.parseInt(recvMessage);
                                     readBufferPosition = 0;
                                     Log.d(TAG, "recvMessage: " + recvMessage);
 
@@ -163,6 +170,7 @@ public class BingoMulti extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+
             }
 
 
@@ -170,6 +178,19 @@ public class BingoMulti extends AppCompatActivity {
 
         //쓰레드 시작//
         thread.start();
+
+    }
+
+    void sendMessage(String msg){
+
+        msg += "\n";
+        try{
+            BluetoothConnect.outputStram.write(msg.getBytes());
+            BluetoothConnect.outputStram.flush();
+
+        }catch (IOException e){
+            Log.e(TAG, "Exception during send",e);
+        }
 
 
     }
