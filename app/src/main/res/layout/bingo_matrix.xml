@@ -185,4 +185,17 @@
         android:text="state"
         />
 
+    <EditText
+        android:id="@+id/com_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="컴퓨터 임력 테스트"
+        />
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="입력"
+        />
+
 </LinearLayout>
