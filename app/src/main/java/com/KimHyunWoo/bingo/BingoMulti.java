@@ -9,9 +9,12 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -22,6 +25,7 @@ public class BingoMulti extends AppCompatActivity {
     private final int maxRange = 51; //0~50
     int[][] nMatrix = new int[5][5];
 
+    private ArrayAdapter<String> mListAdapter; //logListView에 사용
 
     private final String TAG = "BingoLog";
     private final int X = -1;
@@ -32,8 +36,7 @@ public class BingoMulti extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bingo_matrix);
 
-
-
+        //TextView 배열로 빙고판 구성
         int getID;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
@@ -53,6 +56,15 @@ public class BingoMulti extends AppCompatActivity {
         }
 
         clickCell();
+
+        //bluetooth//
+        ListView logListView = (ListView) findViewById(R.id.logListView);
+        mListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        logListView.setAdapter(mListAdapter);
+
+
+        recieveData();
+
     }
 
 
@@ -107,8 +119,60 @@ public class BingoMulti extends AppCompatActivity {
         }
     }
 
-    
 
+    //수신쓰레드 생성//
+    private void recieveData(){
+        int readBufferPosition = 0;
+        byte[] readBuffer = new byte[1024];
+
+        Thread thread = new Thread(new customRunnable(readBufferPosition, readBuffer) {
+            @Override
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    int byteAvailable = 0;
+
+                    try {
+                        byteAvailable = BluetoothConnect.inputStream.available();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (byteAvailable > 0) {
+                            byte[] packetByte = new byte[byteAvailable];
+
+                            BluetoothConnect.inputStream.read(packetByte);
+
+                            for (int i = 0; i < byteAvailable; i++) {
+                                byte b = packetByte[i];
+                                if (b == '\n') {
+                                    byte[] encodeByte = new byte[readBufferPosition];
+                                    System.arraycopy(readBuffer, 0, encodeByte, 0, encodeByte.length);
+                                    String recvMessage = new String(encodeByte, "UTF-8");
+
+                                    readBufferPosition = 0;
+                                    Log.d(TAG, "recvMessage: " + recvMessage);
+
+                                }else{
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "disconnected", e);
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+
+        });
+
+        //쓰레드 시작//
+        thread.start();
+
+
+    }
 
 }
 
