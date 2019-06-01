@@ -14,14 +14,14 @@ import java.util.Random;
 
 public class player1Matrix extends AppCompatActivity {
 
-    private final String TAG = "BINGO";
+    private final String TAG = "BINGO_LOG";
     private final int REQUEST_CHANGE_TURN = 100;
 
 
     TextView matrix[][] = new TextView[5][5];
     TextView state;
 
-    private final int maxRange = 51; //0~50
+    private final int maxRange = 26; //0~50
     private final int X = -1;
     private int playerClickNumber = -1, opponentClickNumber = -1;
     int[][] nMatrix = new int[5][5];
@@ -34,7 +34,7 @@ public class player1Matrix extends AppCompatActivity {
         setContentView(R.layout.player1_matrix);
 
         state = (TextView)findViewById(R.id.state);
-
+        player2Intent = new Intent(player1Matrix.this,player2Matrix.class);
         //TextView 배열로 빙고판 구성
         int getID;
         for (int i = 0; i < 5; i++) {
@@ -53,7 +53,7 @@ public class player1Matrix extends AppCompatActivity {
             }
         }
 
-        playerTrun();
+
 
     }
 
@@ -94,13 +94,18 @@ public class player1Matrix extends AppCompatActivity {
                         if(nMatrix[i][j] == -1){
                             Toast.makeText(player1Matrix.this, "이미 입력한 번호 입니다.", Toast.LENGTH_SHORT).show();
                         }else {
+                            Log.d(TAG, i +"/"+ j);
                             playerClickNumber = nMatrix[i][j];
                             nMatrix[i][j] = -1;
                             matrix[i][j].setText("X");
-                            player2Intent = new Intent(player1Matrix.this,player2Matrix.class);
+                            Log.d(TAG,"player1-Clcik: " + playerClickNumber);
+                            //getIntent().getExtras().clear();
+//                            player2Intent.getExtras().clear();
                             player2Intent.putExtra("number", playerClickNumber);
-                            startActivityForResult(player2Intent, REQUEST_CHANGE_TURN);
-                            //startActivity(player2Intent);
+                            //startActivityForResult(player2Intent, REQUEST_CHANGE_TURN);
+                            player2Intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+                            startActivity(player2Intent);
                         }
 
                         
@@ -133,6 +138,36 @@ public class player1Matrix extends AppCompatActivity {
 
                 }
                 break;
+        }
+    }
+
+    //player2 -> player1
+    @Override
+    protected void onStart() {
+        super.onStart();
+        playerTrun();
+        Log.d(TAG,"player1 - onStart");
+        recvTurn();
+
+    }
+
+    //턴이 돌아왔을 때 상대가 클릭한 숫자가 내 빙고판에 있을경우 체크
+    private void recvTurn(){
+        Intent intent = getIntent();
+        opponentClickNumber=intent.getIntExtra("number1",0);
+        state.setText("player2: " + opponentClickNumber);
+        Log.d(TAG,"player1 - recv: "+ opponentClickNumber);
+
+
+        for(int i= 0; i<5; i++){
+            for(int j= 0; j<5; j++){
+                matrix[i][j].setTextColor(Color.parseColor("#000000"));
+                if(nMatrix[i][j] == opponentClickNumber){
+                    matrix[i][j].setText("X");
+                    matrix[i][j].setTextColor(Color.parseColor("#FF0000"));
+                    nMatrix[i][j] = X;
+                }
+            }
         }
     }
 }
