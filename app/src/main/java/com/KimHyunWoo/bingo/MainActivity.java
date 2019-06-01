@@ -17,8 +17,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         start = (Button)findViewById(R.id.start);
-        intent = new Intent(this, player1.class);
-        intent.putExtra("ket", "null");
+        intent = new Intent(this, center.class);
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
