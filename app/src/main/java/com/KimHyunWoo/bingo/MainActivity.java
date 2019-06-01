@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         start = (Button)findViewById(R.id.start);
-        intent = new Intent(this, BingoSingle.class);
+        intent = new Intent(this, player1Matrix.class);
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override

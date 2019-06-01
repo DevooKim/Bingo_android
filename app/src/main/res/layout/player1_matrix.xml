@@ -6,6 +6,11 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     >
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PLAYER1"
+        />
 
     <GridLayout
         android:id="@+id/matrix"
@@ -185,9 +190,5 @@
         android:text="state"
         />
 
-    <ListView
-        android:id="@+id/logListView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"></ListView>
 
 </LinearLayout>

@@ -18,8 +18,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".player1Matrix"/>
+        <activity android:name=".player2Matrix"/>
 
-        <activity android:name=".BingoSingle"/>
     </application>
 
 
