@@ -1,7 +1,6 @@
 package com.KimHyunWoo.bingo;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -10,32 +9,41 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Random;
-
 public class player1Matrix extends AppCompatActivity {
 
     private final String TAG = "BINGO_LOG";
-    private final int REQUEST_CHANGE_TURN = 100;
-
+    private final int X = -1;
 
     TextView matrix[][] = new TextView[5][5];
     TextView state;
 
-    private final int maxRange = 26; //0~50
-    private final int X = -1;
-    private int playerClickNumber = -1, opponentClickNumber = -1;
-    int[][] nMatrix = new int[5][5];
-    
+    setMatrix player1;
+    int player1Number;
+    int recvNumber = -2;
+
     Intent player2Intent;
+    Intent recvIntent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player1_matrix);
+        Log.d(TAG, "Bingo Start");
 
         state = (TextView)findViewById(R.id.state);
-        player2Intent = new Intent(player1Matrix.this,player2Matrix.class);
-        //TextView 배열로 빙고판 구성
+        recvIntent = getIntent();
+
+        player2Intent = new Intent(player1Matrix.this, player2.class);
+        player2Intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        //스택에 호출하는 액티비티가 존재하는 경우 스택 최상단으로 호출
+        // player1 <-> player2 전환
+        //todo 중간 액티비티로 턴 연결
+        //todo 중간 액티비티에서 핸들러 + 결과 + 최종 빙고판 보여주기
+        //todo 빙고 완성시 중간액티비티에서 player1,2 종료
+        //https://koreamin.tistory.com/entry/%EC%95%88%EB%93%9C%EB%A1%9C%EC%9D%B4%EB%93%9C-%ED%98%84%EC%9E%AC-%EC%95%A1%ED%8B%B0%EB%B9%84%ED%8B%B0-%EB%8B%A4%EB%A5%B8-%EC%95%A1%ED%8B%B0%EB%B9%84%ED%8B%B0-%EC%A2%85%EB%A3%8C%ED%95%98%EA%B8%B0
+
+
+       //TextView 배열로 빙고판 구성
         int getID;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
@@ -44,129 +52,86 @@ public class player1Matrix extends AppCompatActivity {
             }
         }
 
-        //nMatrix: 보이지 않는 숫자배열의 빙고판
-        //matrix: 텍스트뷰로 구성된 빙고판. nMatrix를 실제 보여준다.
-        set_nMatrix();
+        //빙고판 생성//
+        //plyer1,2는 숫자배열로 구성되고 onRestart()를 시작하며 TextView로 보여진다.
+        player1 = new setMatrix();
+
+        //TextView로 이루어진 빙고판.
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                matrix[i][j].setText(String.valueOf(nMatrix[i][j]));
+                    matrix[i][j].setText(String.valueOf(player1.nMatrix[i][j]));
             }
         }
 
-
-
     }
 
-    private void set_nMatrix() {
-        int num;
-        Random r = new Random();
+    //액티비티 A <-> B 전환하면서 반복실행
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+
+//        recvNumber = recvIntent.getIntExtra("number",-2);
+//        Log.d(TAG, "player1 recv: "+recvNumber);
+
+        //TextView로 이루어진 빙고판.
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                num = r.nextInt(maxRange);
-                if (duplicationCheck(nMatrix, num)) {
-                    nMatrix[i][j] = num;
-                } else {
-                    j--;
+                if(player1.nMatrix[i][j] == recvNumber){
+                    matrix[i][j].setText("X");
+                    //todo 최초변경 컬러변경 추가
                 }
             }
         }
+
+        myTurn();
+
     }
 
-    //빙고판 중복 검사
-    protected boolean duplicationCheck(int nMatrix[][], int checkNum) {
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                if (nMatrix[i][j] == checkNum) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        Log.d(TAG,"player1 - onPause");
+//        recvIntent.removeExtra("number");
+//
+//    }
 
-    protected void playerTrun(){
+    protected void myTurn(){
+        Log.d(TAG,"player1 start");
         for(int i =0; i<5; i++){
             for(int j= 0; j<5; j++){
                 matrix[i][j].setOnClickListener(new findIndexOnClickListener(i,j) {
                     @Override
                     public void onClick(View v) {
-                        if(nMatrix[i][j] == -1){
+                        if (player1.nMatrix[i][j] == X) {
                             Toast.makeText(player1Matrix.this, "이미 입력한 번호 입니다.", Toast.LENGTH_SHORT).show();
-                        }else {
-                            Log.d(TAG, i +"/"+ j);
-                            playerClickNumber = nMatrix[i][j];
-                            nMatrix[i][j] = -1;
+                        } else {
+                            player1Number = player1.nMatrix[i][j];
+                            player1.nMatrix[i][j] = X;
                             matrix[i][j].setText("X");
-                            Log.d(TAG,"player1-Clcik: " + playerClickNumber);
-                            //getIntent().getExtras().clear();
-//                            player2Intent.getExtras().clear();
-                            player2Intent.putExtra("number", playerClickNumber);
-                            //startActivityForResult(player2Intent, REQUEST_CHANGE_TURN);
-                            player2Intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            Log.d(TAG, "player1 Click: " + player1Number);
 
-                            startActivity(player2Intent);
+                            //intent//
+                            player2Intent.putExtra("number", player1Number);
+                            //startActivity(player2Intent);
+
+                            startActivityForResult(player2Intent,100);
                         }
-
-                        
                     }
                 });
             }
         }
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "Player1 - onActivityResult");
-        switch(requestCode){
-            case REQUEST_CHANGE_TURN:
-                if(requestCode == RESULT_OK){
-                    data.getIntExtra("number", opponentClickNumber);
-                    state.setText("player2: " + opponentClickNumber);
-                    //턴이 돌아왔을 때 상대가 클릭한 숫자가 내 빙고판에 있을경우 체크
-                    for(int i= 0; i<5; i++){
-                        for(int j= 0; j<5; j++){
-                            matrix[i][j].setTextColor(Color.parseColor("#000000"));
-                            if(nMatrix[i][j] ==opponentClickNumber){
-                                matrix[i][j].setText("X");
-                                matrix[i][j].setTextColor(Color.parseColor("#FF0000"));
-                                nMatrix[i][j] = X;
-                            }
-                        }
-                    }
 
-                }
-                break;
-        }
-    }
-
-    //player2 -> player1
-    @Override
-    protected void onStart() {
-        super.onStart();
-        playerTrun();
-        Log.d(TAG,"player1 - onStart");
-        recvTurn();
-
-    }
-
-    //턴이 돌아왔을 때 상대가 클릭한 숫자가 내 빙고판에 있을경우 체크
-    private void recvTurn(){
-        Intent intent = getIntent();
-        opponentClickNumber=intent.getIntExtra("number1",0);
-        state.setText("player2: " + opponentClickNumber);
-        Log.d(TAG,"player1 - recv: "+ opponentClickNumber);
-
-
-        for(int i= 0; i<5; i++){
-            for(int j= 0; j<5; j++){
-                matrix[i][j].setTextColor(Color.parseColor("#000000"));
-                if(nMatrix[i][j] == opponentClickNumber){
-                    matrix[i][j].setText("X");
-                    matrix[i][j].setTextColor(Color.parseColor("#FF0000"));
-                    nMatrix[i][j] = X;
-                }
+        if(requestCode == 100){
+            if(resultCode == RESULT_OK){
+                recvNumber = data.getIntExtra("number",-2);
+                Log.d(TAG, "player1 recv: "+recvNumber);
             }
         }
     }

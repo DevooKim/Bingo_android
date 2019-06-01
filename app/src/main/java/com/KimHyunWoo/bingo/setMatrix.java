@@ -5,19 +5,13 @@ import java.util.Random;
 
 public class setMatrix implements Serializable {
 
-    private final int maxRange = 51; //0~50
+    private final int maxRange = 26; //0~50
     int [][] nMatrix = new int[5][5];
 
-    private int ClickNumber;
+    int ClickNumber;
 
     private final int X = -1;
 
-    public void setClickNumber(int n){
-        this.ClickNumber = n;
-    }
-    public int getClickNumber(){
-        return ClickNumber;
-    }
 
     setMatrix(){
         int num;
