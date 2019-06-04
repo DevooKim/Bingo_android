@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class center extends AppCompatActivity {
 
@@ -19,6 +20,8 @@ public class center extends AppCompatActivity {
 
     Intent player1Intent, player2Intent, resultIntent;
 
+    TextView state;
+
     boolean isInit = true;
     private int recvNumber=-2;
     private int turn=1;
@@ -30,6 +33,8 @@ public class center extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.center);
+
+        state = (TextView)findViewById(R.id.state);
 
         change = (Button)findViewById(R.id.button);
         result = (Button)findViewById(R.id.result);
@@ -81,6 +86,8 @@ private void markMatrix(){
     private void recvData(Intent data){
         turn = data.getIntExtra("turn", 0);
         recvNumber = data.getIntExtra("num", -2);
+        if(turn == 1){ state.setText("player1 -> player2");}
+        else{ state.setText("player2 -> player1");}
 
         for(int i=0; i<5; i++) {
             for (int j = 0; j < 5; j++) {
@@ -104,12 +111,14 @@ private void markMatrix(){
                 // 1 -> 2
                 if(turn == 1){
                     Log.d(TAG,"Turn Change From 1 to 2");
+
                     player2Intent.putExtra("matrix", player2);
                     player2Intent.putExtra("num", recvNumber);
                     startActivityForResult(player2Intent,REQUEST_TO_TURN2);
 
                 }else if(turn == 2){
                     Log.d(TAG,"Turn Change From 2 to 1");
+                    state.setText("player1 -> player2");
                     player1Intent.putExtra("matrix", player1);
                     player1Intent.putExtra("num", recvNumber);
                     startActivityForResult(player1Intent,REQUEST_TO_TURN2);

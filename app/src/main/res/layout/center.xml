@@ -6,10 +6,22 @@
     android:orientation="vertical"
     >
 
+    <TextView
+        android:id="@+id/state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:layout_gravity="center"
+        />
+
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:background="#26A69A"
+        android:textColor="#ffffff"
         android:text="Start Game"
         />
 
@@ -17,7 +29,11 @@
         android:id="@+id/result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:textColor="#ffffff"
         android:text="go Result"
+        android:background="#26A69A"
         android:visibility="invisible"
         android:clickable="false"
         />
