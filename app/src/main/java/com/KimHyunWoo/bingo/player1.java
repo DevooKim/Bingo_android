@@ -18,6 +18,7 @@ public class player1 extends AppCompatActivity {
 
     private final String TAG = "BINGO_LOG";
     private final int X = -1;
+    private long time= 0;
 
     int recvNumber;
     int clickNumber;
@@ -55,9 +56,18 @@ public class player1 extends AppCompatActivity {
 
         clickCell();
     }
+
     @Override
-    public void onBackPressed() {
-        //뒤로가기키 방지
+    public void onBackPressed(){
+        if(System.currentTimeMillis()-time>=2000){
+            time=System.currentTimeMillis();
+            Toast.makeText(getApplicationContext(),"뒤로 버튼을 한번 더 누르면 종료합니다.",Toast.LENGTH_SHORT).show();
+        }else if(System.currentTimeMillis()-time<2000){
+            Intent intent = new Intent(player1.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        }
     }
 
     protected void dpMatrix(){
