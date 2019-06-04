@@ -27,7 +27,7 @@ public class player1Matrix extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.player1_matrix);
+        setContentView(R.layout.player_matrix);
         Log.d(TAG, "Bingo Start");
 
         state = (TextView)findViewById(R.id.state);
